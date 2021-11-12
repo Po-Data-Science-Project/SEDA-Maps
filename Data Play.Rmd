@@ -1,0 +1,84 @@
+---
+title: "Untitled"
+author: "Amy Luo"
+date: "11/9/2021"
+output: pdf_document
+---
+## Congressional District, Political Leaning, and School District Investments/Resources
+
+These data are available online from the https://exhibits.stanford.edu/data/catalog/db586ns4974
+The data selected are from the "districts covariates.dta" file listed. 
+
+Variables of interest include:
+- leaid: NCES Local Education Agency (District) Code
+- year: spring of school year 
+- grade: grade level
+- cdcode: congressional district code
+- totenrl: number of students in grade
+- nsch: number of schools in the district 
+- speced: number of special ED students in district
+- ell: number of english language learners in district
+- corsup: number of instructional coordinators and supervisors
+- elmgui: number of elementary guidance counselors
+- stutch_all: pupil teacher ratio -- average all student's school
+- ppexp_tot: total per pupil expenditures; tot exp/enrolled
+- ppexp_inst: instruction expenditures; instr exp/enrolled
+
+### Loading Packages 
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(usmap)
+library(ggplot2)
+library(readr)
+library(lubridate)
+library(maps)
+library(dplyr)
+library(dslabs)
+library(stringr)
+```
+
+
+```{r}
+getwd()
+library(haven)
+full_data <- read_dta("/Users/ames/Desktop/Fall '21/school/BST 260/Final Project/district covariates.dta") # does not include year
+full_data_yr <- read_dta("/Users/ames/Desktop/Fall '21/school/BST 260/Final Project/district by year by grade covariates from acs and ccd master_v1_1.dta")
+#dplyr::glimpse(dat)
+
+# New dataframe of variables of interest
+dat <- full_data_yr[, c('leaid','year','grade','cdcode', 'totenrl', 'nsch','speced','ell','corsup','elmgui','stutch_all','ppexp_tot','ppexp_inst')]
+```
+
+
+### Pulling out a map data frame
+```{r}
+# Pull out USA map data frame
+us_map <- map_data("world2", "USA")
+us_map %>% ggplot(aes(x = long, y = lat, group = group)) +
+                  geom_polygon(fill = "blue4", color = "white") + 
+                  coord_fixed(1.3)
+
+# Without Alaska and Hawaii
+usa <- map_data("usa")
+usa %>% ggplot(aes(x = long, y = lat, group = group)) +
+        geom_polygon(color = "purple", fill = NA)
+
+# Showing individual states
+us_states <- map_data("state")
+
+us_states %>% ggplot(aes(x = long, y = lat, fill = region, group = group)) + 
+              geom_polygon(color = "white") + 
+              coord_fixed(1.3) 
+
+us_states %>% ggplot(aes(x = long, y = lat, fill = region, group = group)) + 
+              geom_polygon(color = "white") + 
+              coord_fixed(1.3) +
+              guides(fill = FALSE) # do this to leave off the color legend
+
+# Showing counties
+AllCounty <- map_data("county")
+AllCounty %>% ggplot(aes(x = long, y = lat, group = group)) +
+              geom_polygon(color = "red", fill = NA)
+
+AllCounty %>% ggplot(aes(x = long, y = lat, group = group)) +
+              geom_polygon(color = "red", fill = NA, size = .1 )
+```
