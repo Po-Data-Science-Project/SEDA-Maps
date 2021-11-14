@@ -34,22 +34,62 @@ library(maps)
 library(dplyr)
 library(dslabs)
 library(stringr)
+library(tidyverse)
+library(sf)
+library(ggmap)
+library(haven)
 ```
 
-
+### Loading the data
 ```{r}
-getwd()
-library(haven)
 full_data <- read_dta("/Users/ames/Desktop/Fall '21/school/BST 260/Final Project/district covariates.dta") # does not include year
 full_data_yr <- read_dta("/Users/ames/Desktop/Fall '21/school/BST 260/Final Project/district by year by grade covariates from acs and ccd master_v1_1.dta")
 #dplyr::glimpse(dat)
 
-# New dataframe of variables of interest
-dat <- full_data_yr[, c('leaid','year','grade','cdcode', 'totenrl', 'nsch','speced','ell','corsup','elmgui','stutch_all','ppexp_tot','ppexp_inst')]
+# New data frame of variables of interest
+dat <- full_data_yr %>% 
+  filter(year == 2013) %>%
+  group_by(leaid) %>%
+  mutate(totdistr = sum(totenrl)) %>%
+  ungroup(leaid) %>%
+  filter(grade == 3) %>% need to filter by unique district not grade
+  select('year','leaid','cdcode','fips','totdistr', 'perspeced','perell','stutch_all','ppexp_tot','ppexp_inst', 'totdistr') 
+
 ```
 
 
 ### Pulling out a map data frame
+```{r}
+# Setting congressional district boundaries
+get_congress_map <- function(cong=112) {
+  tmp_file <- tempfile()
+  tmp_dir <- tempdir()
+  zp <- sprintf("https://cdmaps.polisci.ucla.edu/shp/districts112.zip",cong)
+  download.file(zp, tmp_file)
+  unzip(zipfile = tmp_file, exdir = tmp_dir)
+  fpath <- paste(tmp_dir, sprintf("districtShapes/districts112.shp",cong), sep = "/")
+  st_read(fpath)
+}
+
+# Loading maps from the 112th Congress (2011-2013)
+cd112 <- get_congress_map(112)
+```
+
+### Adding data to plot
+```{r}
+# Creating a composite variable for school district 'need' 
+dat$need <- dat$stutch_all + (dat$speced/dat$totenrl) + (dat$ell/dat$totenrl)
+
+## Weighted avg. by total student enrolled by congressional district
+
+
+# Creating a composite variable for school district 'support'
+
+## Weight avg. by total student enrolled by congressional district
+
+
+```
+
 ```{r}
 # Pull out USA map data frame
 us_map <- map_data("world2", "USA")
