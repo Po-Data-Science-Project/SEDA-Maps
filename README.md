@@ -3,13 +3,14 @@ Amy's work in progress
 This is pretty final - *now soliciting feedback from group members*
 
 ## Guide for Readers
+### You will need (to download):
 - **SEDA_Maps.Rmd** - final RMarkdown file 
 - **SEDA_Maps.html** - final html file
-- **Data Play.Rmd** - brainstorming and draft files
 - **cd_113_TW_ideology_estimates.csv** - input data from The American Ideology Project
 - **Amy_Table.csv** - input data summarizing political party platforms on education
 - **https://stacks.stanford.edu/file/druid:db586ns4974/codebook_covariates_v1_1.xlsx** - input data from Stanford Education Data Archive (SEDA)  
-
+### Extra files (for project work documentation):
+-  **Data Play.Rmd** - brainstorming and draft files
 
 ## Read more about this project below:
 #### Overview and Motivation: Provide an overview of the project goals and the motivation for it. Consider that this will be read by people who did not see your project proposal.
