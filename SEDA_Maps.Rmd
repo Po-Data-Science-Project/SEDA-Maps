@@ -46,6 +46,8 @@ library(dplyr)
 library(kableExtra)
 ```
 
+
+#### Data Prep 
 ```{r message=FALSE, warning=FALSE}
 # Loading SEDA dataset
 full_data_yr <- read_dta("district by year by grade covariates from acs and ccd master_v1_1.dta")
@@ -64,6 +66,31 @@ dat <- dat[!duplicated(dat$leaid),] %>% # keeping only one observation per schoo
 seda <- dat[!duplicated(dat$cdcode),] %>% # keeping only one observation per congressional district (removing school district layer)
   select(-'leaid',-'ppexp_tot',-'ppexp_inst') # dropping school district ID
 ```
+
+
+#### Background: Party Platform Positions on Education 
+```{r message=FALSE, warning=FALSE}
+tabd <- read.csv('Amy_Table.csv')
+tabd %>%
+  kbl(caption="Comparison between Dem and GOP platforms for K-12 education",
+      format= "html",
+      col.names = c("Topic","Democrat","Republican"),
+                  align="l",) %>%
+  column_spec(2, background = 'aliceblue') %>%
+  column_spec(3, background = 'mistyrose') %>%
+  row_spec(0, bold =T, background='lightgrey', color='black') %>%
+  kable_paper(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+              full_width = F,
+              html_font = "calibri",
+              fixed_thead = T,
+              position = 'center') %>%
+  column_spec(1,bold=T, border_right =T) %>%
+  footnote(general='https://www.ascd.org/blogs/what-the-democrats-and-republicans-stand-for-on-education-excerpts-from-party-platforms',
+           general_title="Source: ") %>%
+  scroll_box(width = "100%", height = "650px")
+```
+
+
 
 #### Mapping Constituent Ideology by Congressional District
 ```{r message=FALSE, warning=FALSE}
@@ -117,28 +144,6 @@ ideology_map <- ggplot() +
        subtitle = 'Source: The American Ideology Project (Tausanovitch & Warshaw, 2015)')
 
 ideology_map
-```
-
-#### Background: Party Platform Positions on Education 
-```{r message=FALSE, warning=FALSE}
-tabd <- read.csv('Amy_Table.csv')
-tabd %>%
-  kbl(caption="Comparison between Dem and GOP platforms for K-12 education",
-      format= "html",
-      col.names = c("Topic","Democrat","Republican"),
-                  align="l",) %>%
-  column_spec(2, background = 'aliceblue') %>%
-  column_spec(3, background = 'mistyrose') %>%
-  row_spec(0, bold =T, background='lightgrey', color='black') %>%
-  kable_paper(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-              full_width = F,
-              html_font = "calibri",
-              fixed_thead = T,
-              position = 'center') %>%
-  column_spec(1,bold=T, border_right =T) %>%
-  footnote(general='https://www.ascd.org/blogs/what-the-democrats-and-republicans-stand-for-on-education-excerpts-from-party-platforms',
-           general_title="Source: ") %>%
-  scroll_box(width = "100%", height = "650px")
 ```
 
 
