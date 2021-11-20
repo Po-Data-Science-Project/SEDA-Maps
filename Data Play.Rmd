@@ -4,6 +4,8 @@ author: "Amy Luo"
 date: "11/20/2021"
 output:
   html_document:
+    theme: 
+      bootswatch: 'cosmo'
     df_print: paged
   pdf_document: default
 ---
@@ -11,16 +13,16 @@ output:
 
 School Expenditure data are available from: https://exhibits.stanford.edu/data/catalog/db586ns4974
 
-Political Ideology data are available from: https://americanideologyproject.com/ 
+Political Ideology data are available from: https://americanideologyproject.com/\ 
 - For further information on the measurement methodology for constituent policy preferences, please see this paper by [Tausanovitch and Warshaw (2013)](https://americanideologyproject.com/JOP_Tausanovich_Warshaw_2013.pdf) 
 
-Variables of interest include:
-- leaid: NCES Local Education Agency (District) Code
-- year: spring of school year 
-- grade: grade level
-- cdcode: congressional district code
-- ppexp_tot: total per pupil expenditures; tot exp/enrolled
-- ppexp_inst: instruction expenditures; instr exp/enrolled
+Variables of interest include:\
+- leaid: NCES Local Education Agency (District) Code\
+- year: spring of school year\
+- grade: grade level\
+- cdcode: congressional district code\
+- ppexp_tot: total per pupil expenditures; tot exp/enrolled\
+- ppexp_inst: instruction expenditures; instr exp/enrolled\
 
 ### Loading the data
 ```{r}
@@ -193,7 +195,7 @@ leaflet(map) %>%
             pal=palette,
             values=~z_i,
             opacity=0.5,
-            title='Per Pupil Expenditure, scaled') 
+            title='Per Pupil Instructor, scaled') 
 ```
 
 ## Extra Work to Delete
