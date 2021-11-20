@@ -17,9 +17,10 @@ This work was inspired by the redrawing of Congressional boundary lines based on
 Here this work underscores the potential impact on students and teachers by visualizing current differences in spending in education for grades 3-8 based on the dominant political ideology in Congressional Districts. This question arose as way to compare the two major parties – Democrats and Republicans – to illuminate how political platforms and values have direct impacts at the level of school districts. An overview of the party education platforms are included. 
 
 ## Data: Source, scraping method, cleanup, etc.
-Sources: The American Ideology Project (2015 update), available from: https://americanideologyproject.com/
-Stanford Education Data Archive, (codebook_covariates_v1_1.xlsx), avaible from: https://exhibits.stanford.edu/data/catalog/db586ns4974
-113th Congressional District coordinates, availabe from: https://github.com/ropensci/USAboundaries
+Sources: 
+- The American Ideology Project (2015 update), available from: https://americanideologyproject.com/
+- Stanford Education Data Archive, (codebook_covariates_v1_1.xlsx), avaible from: https://exhibits.stanford.edu/data/catalog/db586ns4974
+- 113th Congressional District coordinates, availabe from: https://github.com/ropensci/USAboundaries
 
 ## Exploratory Analysis: What visualizations did you use to look at your data in different ways? What are the different statistical methods you considered? Justify the decisions you made, and show any major changes to your ideas. How did you reach these conclusions?
 The first step was to delineate between political right and left Congressional Districts. We used included estimates of political preferences from a collection of survey measures to capture the distribution of political preferences based on the citizens (Tausanovitch and Warshaw, 2013). As mentioned above, one concern we had was that, as a result of gerrymandering, relying only on the election results and the parties of Congressional representatives may underweight the true distribution of political preferences by those living in the District.  
