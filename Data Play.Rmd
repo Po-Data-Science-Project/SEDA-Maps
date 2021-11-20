@@ -1,15 +1,18 @@
 ---
-title: "Untitled"
+title: "SEDA Maps"
 author: "Amy Luo"
 date: "11/20/2021"
 output:
   html_document:
     df_print: paged
+  pdf_document: default
 ---
 ## Congressional District, Political Leaning, and School District Investments/Resources
 
-These data are available online from the https://exhibits.stanford.edu/data/catalog/db586ns4974
-The data selected are from the "districts covariates.dta" file listed. 
+School Expenditure data are available from: https://exhibits.stanford.edu/data/catalog/db586ns4974
+
+Political Ideology data are available from: https://americanideologyproject.com/ 
+- For further information on the measurement methodology for constituent policy preferences, please see this paper by [Tausanovitch and Warshaw (2013)](https://americanideologyproject.com/JOP_Tausanovich_Warshaw_2013.pdf) 
 
 Variables of interest include:
 - leaid: NCES Local Education Agency (District) Code
@@ -61,10 +64,11 @@ ideology <- read.csv('cd_113_TW_ideology_estimates.csv')
 # Joining political ideology data with the spatial data
 ## String processing spatial dataset to remove leading zeros in "geoid"
 library(stringr)
-spatial <- spatial %>%
-  mutate(cd_fips = str_remove(spatial$geoid, "^0+")) %>%
+spatial <- spatial %>% # Removing Alaska, Hawaii, and Puerto Rico
+  mutate(cd_fips = str_remove(spatial$geoid, "^0+")) %>% 
   filter(state_abbr != 'AK') %>%
-  filter(state_abbr != 'HI')
+  filter(state_abbr != 'HI') %>%
+  filter(state_abbr != 'PR')
 
 ## Selecting columns of interest from ideology dataset
 ideology <- ideology %>%
@@ -151,8 +155,7 @@ leaflet(map) %>%
             pal=palette,
             values=~z,
             opacity=0.5,
-            title='Per Pupil Expenditure, 
-            z-scores') 
+            title='Per Pupil Expenditure, scaled') 
 ```
 
 
@@ -190,8 +193,7 @@ leaflet(map) %>%
             pal=palette,
             values=~z_i,
             opacity=0.5,
-            title='Per Pupil Expenditure, 
-            z-scores') 
+            title='Per Pupil Expenditure, scaled') 
 ```
 
 ## Extra Work to Delete
