@@ -1,8 +1,10 @@
 ---
 title: "Untitled"
 author: "Amy Luo"
-date: "11/9/2021"
-output: pdf_document
+date: "11/20/2021"
+output:
+  html_document:
+    df_print: paged
 ---
 ## Congressional District, Political Leaning, and School District Investments/Resources
 
@@ -14,52 +16,323 @@ Variables of interest include:
 - year: spring of school year 
 - grade: grade level
 - cdcode: congressional district code
-- totenrl: number of students in grade
-- nsch: number of schools in the district 
-- speced: number of special ED students in district
-- ell: number of english language learners in district
-- corsup: number of instructional coordinators and supervisors
-- elmgui: number of elementary guidance counselors
-- stutch_all: pupil teacher ratio -- average all student's school
 - ppexp_tot: total per pupil expenditures; tot exp/enrolled
 - ppexp_inst: instruction expenditures; instr exp/enrolled
 
-### Loading Packages 
-```{r, echo = FALSE, message=FALSE, warning=FALSE}
-library(usmap)
-library(ggplot2)
-library(readr)
-library(lubridate)
-library(maps)
-library(dplyr)
-library(dslabs)
-library(stringr)
-library(tidyverse)
-library(sf)
-library(ggmap)
-library(haven)
-```
-
 ### Loading the data
 ```{r}
-full_data <- read_dta("/Users/ames/Desktop/Fall '21/school/BST 260/Final Project/district covariates.dta") # does not include year
+library(haven)
+library(dplyr)
 full_data_yr <- read_dta("/Users/ames/Desktop/Fall '21/school/BST 260/Final Project/district by year by grade covariates from acs and ccd master_v1_1.dta")
-#dplyr::glimpse(dat)
 
 # New data frame of variables of interest
 dat <- full_data_yr %>% 
   filter(year == 2013) %>%
   group_by(leaid) %>%
   mutate(totdistr = sum(totenrl)) %>%
-  ungroup(leaid) %>%
-  filter(grade == 3) %>% need to filter by unique district not grade
-  select('year','leaid','cdcode','fips','totdistr', 'perspeced','perell','stutch_all','ppexp_tot','ppexp_inst', 'totdistr') 
+  ungroup(leaid)
+ 
+dat <- dat[!duplicated(dat$leaid),] %>%
+  select('year','leaid','cdcode','fips','totdistr', 'perspeced','perell','stutch_all','ppexp_tot','ppexp_inst', 'totdistr')
+```
 
+### Mapping Constituent Ideology by Congressional District
+```{r}
+# Loading USAboundaries from GitHub
+devtools::install_github("ropensci/USAboundaries")
+devtools::install_github("ropensci/USAboundariesData")
+
+library(USAboundaries)
+library(dplyr)
+library(sf)
+library(leaflet)
+library(dplyr)
+library(sp)
+library(ggplot2)
+
+# Using USAboundaries package, load the spatial data 2010-2020 Congressional Districts
+spatial <- us_congressional()
+
+
+# Loading congressional ideology data for the 113th Congress from The American Ideology Project, https://americanideologyproject.com/
+ideology <- read.csv('cd_113_TW_ideology_estimates.csv')
+
+
+# Joining political ideology data with the spatial data
+## String processing spatial dataset to remove leading zeros in "geoid"
+library(stringr)
+spatial <- spatial %>%
+  mutate(cd_fips = str_remove(spatial$geoid, "^0+")) %>%
+  filter(state_abbr != 'AK') %>%
+  filter(state_abbr != 'HI')
+
+## Selecting columns of interest from ideology dataset
+ideology <- ideology %>%
+  select(c('cd_fips', 'mrp_mean', 'pres_2012')) %>%
+  mutate(cd_fips = as.character(cd_fips)) %>%
+  mutate(mrp = -mrp_mean)
+
+map <- left_join(spatial, ideology, by = 'cd_fips')
+
+# Mapping
+ideology_map1 <- ggplot() +
+  geom_sf(data = map, 
+          aes(geometry=geometry, fill=mrp_mean), alpha=2) +
+  scale_fill_distiller(palette='RdBu', 
+                       limits = c(-1.2,1.2), 
+                       direction = -1, 
+                       breaks=c(-1,0,1),
+                       labels=c('Left','Center','Right'),
+                       name='Political Leaning') +
+  theme(panel.grid.major = element_blank(), 
+        panel.background = element_blank(),
+        axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        plot.subtitle = element_text(size=9, color='grey45')) +
+  labs(title='Contituent Political Ideology by Congressional District', 
+       subtitle = 'Source: The American Ideology Project (Tausanovitch & Warshaw, 2015)')
+
+ideology_map1
+```
+
+### Mapping Average District Spending by Congressional District
+```{r}
+# Joining education dataset with map dataset
+dat <- dat %>% 
+  mutate(cd_fips=as.character(cdcode))
+
+map <- left_join(map, dat, by = 'cd_fips') 
+
+# Per pupil Congressional District expenditure
+map$z <- scale(map$ppexp_tot)
+
+# Per instructor Congressional District Expenditure
+map$z_i <- scale(map$ppexp_inst)
+
+right <- map %>%
+  subset(mrp_mean >0)
+left <- map %>%
+  subset(mrp_mean <0)
+
+# Mapping per pupil Congressional District expenditure
+palette <- colorBin("Greens", domain = c(-2,40), bins = 9)
+
+leaflet(map) %>%
+  addProviderTiles(providers$CartoDB.Positron, group='Political') %>%
+  addTiles(group='Physical') %>%
+  addPolygons(data=right,
+               opacity=0.5,
+               weight=2,
+               color='salmon',
+               fillColor = ~palette(z),
+              fillOpacity = 3,
+               highlight=highlightOptions(weight=3,
+                                        color='aliceblue',
+                                        bringToFront=T),
+              group="Right") %>%
+  addPolygons(data=left,
+              opacity=0.5,
+              weight=2,
+              color='steelblue',
+              fillColor = ~palette(z),
+              fillOpacity = 3,
+              highlight=highlightOptions(weight=3,
+                                      color='aliceblue',
+                                      bringToFront=T),
+               group='Left') %>%
+  addLayersControl(baseGroups=c('Boundaries', 'Geography'),
+    overlayGroups=c('Right', 'Left'),
+    options=layersControlOptions(collapsed = F))%>%
+  addLegend('bottomright',
+            pal=palette,
+            values=~z,
+            opacity=0.5,
+            title='Per Pupil Expenditure, 
+            z-scores') 
 ```
 
 
-### Pulling out a map data frame
 ```{r}
+# Mapping per instructor Congressional District Expenditure
+palette <- colorBin("Greens", domain = c(-2,46), bins = 9)
+
+leaflet(map) %>%
+  addProviderTiles(providers$CartoDB.Positron, group='Political') %>%
+  addTiles(group='Physical') %>%
+  addPolygons(data=right,
+               opacity=0.5,
+               weight=2,
+               color='salmon',
+               fillColor = ~palette(z_i),
+              fillOpacity = 3,
+               highlight=highlightOptions(weight=3,
+                                        color='aliceblue',
+                                        bringToFront=T),
+              group="Right") %>%
+  addPolygons(data=left,
+              opacity=0.5,
+              weight=2,
+              color='steelblue',
+              fillColor = ~palette(z_i),
+              fillOpacity = 3,
+              highlight=highlightOptions(weight=3,
+                                      color='aliceblue',
+                                      bringToFront=T),
+               group='Left') %>%
+  addLayersControl(baseGroups=c('Political', 'Physical'),
+    overlayGroups=c('Right', 'Left'),
+    options=layersControlOptions(collapsed = F))%>%
+  addLegend('bottomright',
+            pal=palette,
+            values=~z_i,
+            opacity=0.5,
+            title='Per Pupil Expenditure, 
+            z-scores') 
+```
+
+## Extra Work to Delete
+```{r eval=FALSE, include=FALSE}
+ideology_map <- ggplot() +
+  geom_sf(data = map, 
+          aes(geometry=geometry, fill=mrp), alpha=0.9) +
+  scale_fill_steps2(limits = c(-1.2,1.2)) +
+  theme(panel.grid.major = element_blank(), 
+        panel.background = element_blank(),
+        axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) ; ideology_map
+```
+
+```{r eval=FALSE, include=FALSE}
+## Subsetting data into right and left 
+left <- map %>%
+  subset(mrp_mean<0)
+
+right <- map %>%
+  subset(mrp_mean>0)
+
+leaflet(map) %>%
+  addProviderTiles(providers$CartoDB.Positron, group='Political') %>%
+  addTiles(group='Physical') %>%
+  addPolylines(data=right,
+               opacity=0.5,
+               weight=2,
+               color='salmon',
+               highlight=highlightOptions(weight=3,
+                                        color='aliceblue',
+                                        bringToFront=T),
+              group="Right") %>%
+  addPolylines(data=left,
+               opacity=0.5,
+               weight=2,
+               color='steelblue',
+               highlight=highlightOptions(weight=3,
+                                      color='aliceblue',
+                                      bringToFront=T),
+               group='Left') %>%
+  addLayersControl(
+    baseGroups=c('Political', 'Physical'),
+    overlayGroups=c('Right', 'Left'),
+    options=layersControlOptions(collapsed = F)) %>%
+  addLegend('bottomright',
+            colors=c('steelblue','salmon'),
+            labels=c('Left','Right'),
+            title='Congressional District') 
+```
+
+```{r eval=FALSE, include=FALSE}
+test <- read.csv('shd_2012_TW_ideology_estimates.csv') # state house district
+test1 <- read.csv('county_TW_ideology_estimates.csv') # presidential elections by county
+test2 <- read.csv('states_parties_estimates.csv') # state parties estimates
+test3 <- read.csv('cd_113_TW_ideology_estimates.csv') # 113th congressional district level
+```
+
+```{r eval=FALSE, include=FALSE}
+plot(st_geometry(right), col='tomato1')
+plot(st_geometry(left), col='steelblue2')
+```
+
+```{r eval=FALSE, include=FALSE}
+## Using leaflet package to make map
+leaflet(md_115) %>% 
+    addTiles() %>% 
+    addPolygons(color = "black",
+                opacity = 1,
+                weight = 1,
+                fillColor = ~palette(margin_percent),
+                fillOpacity = 1,
+                label = ~paste0("District: ", cd116fp))
+
+map <- leaflet(political_map) %>%
+  addProviderTiles(providers$CartoDB.Positron) %>% 
+  addPolygons(data = political_map$geometry,
+              color = 'black',
+              opacity = 1,
+              weight = 1,
+              fillColor = ~palette(mrp_mean),
+              fillOpacity = 1) ; map
+
+## example from 
+georgia_map %>% ggplot(aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = manual_fill), color = "black")  +
+  scale_fill_manual(name = "Cases per 100,000", values = pal) +
+  coord_fixed(1.3) +
+  theme(panel.grid.major = element_blank(), 
+        panel.background = element_blank(),
+        axis.title = element_blank(), 
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) +
+  facet_grid(. ~ date)
+```
+
+```{r eval=FALSE, include=FALSE}
+ggmap() + 
+  geom_sf(data=map,aes(fill=`mrp_mean`),inherit.aes=FALSE,alpha=0.9) +
+  scale_fill_gradient(low = "blue", high = "red", limits=c(20,80)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+```
+
+
+```{r eval=FALSE, include=FALSE}
+md_votes <- read.csv(system.file("extdata", "md-115.csv",
+                                   package = "USAboundaries"),
+                       colClasses = c("character", "integer", "character", "integer",
+                                      "character", "integer", "integer", "integer",
+                                      "integer", "integer", "integer",  "numeric",
+                                      "numeric", "numeric", "numeric", "numeric"))
+md_districts <- us_congressional(states = "MD")
+
+
+md_115 <- md_districts %>% 
+  left_join(md_votes, by = c("cd116fp" = "district")) 
+
+md_115$margin_percent <- md_115$percentage_republican - 0.5
+
+palette <- colorBin("RdBu", domain = c(-0.3, 0.3), bins = 7, reverse = TRUE)
+
+leaflet(md_115) %>% 
+    addTiles() %>% 
+    addPolygons(color = "black",
+                opacity = 1,
+                weight = 1,
+                fillColor = ~palette(margin_percent),
+                fillOpacity = 1,
+                label = ~paste0("District: ", cd116fp))
+```
+
+```{r eval=FALSE, include=FALSE}
 # Setting congressional district boundaries
 get_congress_map <- function(cong=112) {
   tmp_file <- tempfile()
@@ -73,10 +346,37 @@ get_congress_map <- function(cong=112) {
 
 # Loading maps from the 112th Congress (2011-2013)
 cd112 <- get_congress_map(112)
+
+
+# Selecting specific districts
+cd112_nj <- cd112 %>% 
+            filter(STATENAME=="New Jersey") %>%
+            mutate(DISTRICT = as.character(DISTRICT)) %>%
+            select(DISTRICT)
+
+trump_nj <- tibble(DISTRICT=as.character(1:12),
+                   `Trump Vote`=c(36.1, 50.6, 51.4, 55.8, 
+                                    48.8, 40.6, 47.5, 21.5,
+                                    33.1, 12.8, 48.8, 31.8))
+cd112_nj <- cd112_nj %>% left_join(trump_nj, by="DISTRICT")
+cd112_nj
+
+
+dm <- get_map(location="New Jersey",zoom=8)
+
+
+ggmap() + 
+  geom_sf(data=cd112_nj,aes(fill=`Trump Vote`),inherit.aes=FALSE,alpha=0.9) + 
+  scale_fill_gradient(low = "blue", high = "red", limits=c(20,80)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()
 ```
 
-### Adding data to plot
-```{r}
+```{r eval=FALSE, include=FALSE}
 # Creating a composite variable for school district 'need' 
 dat$need <- dat$stutch_all + (dat$speced/dat$totenrl) + (dat$ell/dat$totenrl)
 
@@ -90,7 +390,7 @@ dat$need <- dat$stutch_all + (dat$speced/dat$totenrl) + (dat$ell/dat$totenrl)
 
 ```
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 # Pull out USA map data frame
 us_map <- map_data("world2", "USA")
 us_map %>% ggplot(aes(x = long, y = lat, group = group)) +
@@ -121,4 +421,17 @@ AllCounty %>% ggplot(aes(x = long, y = lat, group = group)) +
 
 AllCounty %>% ggplot(aes(x = long, y = lat, group = group)) +
               geom_polygon(color = "red", fill = NA, size = .1 )
+```
+
+
+
+```{r eval=FALSE, include=FALSE}
+# Loading USAboundaries from GitHub
+devtools::install_github("ropensci/USAboundaries")
+devtools::install_github("ropensci/USAboundariesData")
+
+library(USAboundaries) 
+congress <- us_congressional()
+plot(st_geometry(congress))
+title("Congressional district boundaries in California")
 ```
