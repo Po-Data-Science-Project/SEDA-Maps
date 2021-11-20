@@ -4,49 +4,36 @@ author: "Amy Luo"
 date: "11/20/2021"
 output:
   html_document:
-    theme: 
+    fig_width: 10
+    fig_height: 10
+    theme:
       bootswatch: 'cosmo'
     df_print: paged
   pdf_document: default
 ---
-## Congressional District, Political Leaning, and School District Investments/Resources
+### Congressional District, Political Leaning, and School Funding
 
-School Expenditure data are available from: https://exhibits.stanford.edu/data/catalog/db586ns4974
+**School Expenditure data** are available from: https://exhibits.stanford.edu/data/catalog/db586ns4974
 
-Political Ideology data are available from: https://americanideologyproject.com/\ 
+**Political Ideology data** are available from: https://americanideologyproject.com/
+
 - For further information on the measurement methodology for constituent policy preferences, please see this paper by [Tausanovitch and Warshaw (2013)](https://americanideologyproject.com/JOP_Tausanovich_Warshaw_2013.pdf) 
 
 Variables of interest include:\
-- leaid: NCES Local Education Agency (District) Code\
-- year: spring of school year\
-- grade: grade level\
-- cdcode: congressional district code\
-- ppexp_tot: total per pupil expenditures; tot exp/enrolled\
-- ppexp_inst: instruction expenditures; instr exp/enrolled\
 
-### Loading the data
-```{r}
+- *leaid* : NCES Local Education Agency (District) Code\
+- *year* : spring of school year\
+- *grade* : grade level\
+- *cdcode*, *cd_fips* : congressional district code\
+- *ppexp_tot* : total per pupil expenditures; tot exp/enrolled\
+- *ppexp_inst* : instruction expenditures; instr exp/enrolled\
+- *mrp_mean* : mean policy preferences of citizens in every congressional district estimates using multilevel regression with poststratification
+
+#### Loading the data
+```{r message=FALSE, warning=FALSE}
+# Packages
 library(haven)
 library(dplyr)
-full_data_yr <- read_dta("/Users/ames/Desktop/Fall '21/school/BST 260/Final Project/district by year by grade covariates from acs and ccd master_v1_1.dta")
-
-# New data frame of variables of interest
-dat <- full_data_yr %>% 
-  filter(year == 2013) %>%
-  group_by(leaid) %>%
-  mutate(totdistr = sum(totenrl)) %>%
-  ungroup(leaid)
- 
-dat <- dat[!duplicated(dat$leaid),] %>%
-  select('year','leaid','cdcode','fips','totdistr', 'perspeced','perell','stutch_all','ppexp_tot','ppexp_inst', 'totdistr')
-```
-
-### Mapping Constituent Ideology by Congressional District
-```{r}
-# Loading USAboundaries from GitHub
-devtools::install_github("ropensci/USAboundaries")
-devtools::install_github("ropensci/USAboundariesData")
-
 library(USAboundaries)
 library(dplyr)
 library(sf)
@@ -54,6 +41,35 @@ library(leaflet)
 library(dplyr)
 library(sp)
 library(ggplot2)
+library(stringr)
+library(dplyr)
+library(kableExtra)
+```
+
+```{r message=FALSE, warning=FALSE}
+# Loading SEDA dataset
+full_data_yr <- read_dta("district by year by grade covariates from acs and ccd master_v1_1.dta")
+
+# New data frame of variables of interest
+dat <- full_data_yr %>% # filtering to 2013
+  filter(year ==2013) 
+
+dat <- dat[!duplicated(dat$leaid),] %>% # keeping only one observation per school district (removing grade level layer)
+  select('leaid','cdcode','ppexp_tot','ppexp_inst') %>% 
+  group_by(cdcode) %>% 
+  mutate(ppexp = mean(ppexp_tot)) %>% # average per pupil expenditure in a congressional district
+  mutate(piexp = mean(ppexp_inst)) %>% # average per instructor expenditure in a congressional district
+  ungroup()
+
+seda <- dat[!duplicated(dat$cdcode),] %>% # keeping only one observation per congressional district (removing school district layer)
+  select(-'leaid',-'ppexp_tot',-'ppexp_inst') # dropping school district ID
+```
+
+#### Mapping Constituent Ideology by Congressional District
+```{r message=FALSE, warning=FALSE}
+# Loading USAboundaries from GitHub
+devtools::install_github("ropensci/USAboundaries")
+devtools::install_github("ropensci/USAboundariesData")
 
 # Using USAboundaries package, load the spatial data 2010-2020 Congressional Districts
 spatial <- us_congressional()
@@ -65,7 +81,6 @@ ideology <- read.csv('cd_113_TW_ideology_estimates.csv')
 
 # Joining political ideology data with the spatial data
 ## String processing spatial dataset to remove leading zeros in "geoid"
-library(stringr)
 spatial <- spatial %>% # Removing Alaska, Hawaii, and Puerto Rico
   mutate(cd_fips = str_remove(spatial$geoid, "^0+")) %>% 
   filter(state_abbr != 'AK') %>%
@@ -75,13 +90,12 @@ spatial <- spatial %>% # Removing Alaska, Hawaii, and Puerto Rico
 ## Selecting columns of interest from ideology dataset
 ideology <- ideology %>%
   select(c('cd_fips', 'mrp_mean', 'pres_2012')) %>%
-  mutate(cd_fips = as.character(cd_fips)) %>%
-  mutate(mrp = -mrp_mean)
+  mutate(cd_fips = as.character(cd_fips))
 
 map <- left_join(spatial, ideology, by = 'cd_fips')
 
 # Mapping
-ideology_map1 <- ggplot() +
+ideology_map <- ggplot() +
   geom_sf(data = map, 
           aes(geometry=geometry, fill=mrp_mean), alpha=2) +
   scale_fill_distiller(palette='RdBu', 
@@ -102,30 +116,88 @@ ideology_map1 <- ggplot() +
   labs(title='Contituent Political Ideology by Congressional District', 
        subtitle = 'Source: The American Ideology Project (Tausanovitch & Warshaw, 2015)')
 
-ideology_map1
+ideology_map
 ```
 
-### Mapping Average District Spending by Congressional District
-```{r}
-# Joining education dataset with map dataset
-dat <- dat %>% 
-  mutate(cd_fips=as.character(cdcode))
+#### Background: Party Platform Positions on Education 
+```{r message=FALSE, warning=FALSE}
+tabd <- read.csv('Amy_Table.csv')
+tabd %>%
+  kbl(caption="Comparison between Dem and GOP platforms for K-12 education",
+      format= "html",
+      col.names = c("Topic","Democrat","Republican"),
+                  align="l",) %>%
+  column_spec(2, background = 'aliceblue') %>%
+  column_spec(3, background = 'mistyrose') %>%
+  row_spec(0, bold =T, background='lightgrey', color='black') %>%
+  kable_paper(bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+              full_width = F,
+              html_font = "calibri",
+              fixed_thead = T,
+              position = 'center') %>%
+  column_spec(1,bold=T, border_right =T) %>%
+  footnote(general='https://www.ascd.org/blogs/what-the-democrats-and-republicans-stand-for-on-education-excerpts-from-party-platforms',
+           general_title="Source: ") %>%
+  scroll_box(width = "100%", height = "650px")
+```
 
-map <- left_join(map, dat, by = 'cd_fips') 
+
+#### Distribution of Education Funding
+```{r message=FALSE, warning=FALSE}
+# Joining education dataset with map dataset
+seda <- seda %>% 
+  mutate(cd_fips=as.character(cdcode)) %>%
+  select(-'cdcode')
+
+map <- left_join(map, seda, by = 'cd_fips') 
 
 # Per pupil Congressional District expenditure
-map$z <- scale(map$ppexp_tot)
+map$z <- scale(map$ppexp)
 
 # Per instructor Congressional District Expenditure
-map$z_i <- scale(map$ppexp_inst)
+map$z_i <- scale(map$piexp)
 
+# Creating indicator variable for histogram layers
+hist <- map %>% 
+  mutate(left = ifelse(mrp_mean>0, 'Right', 'Left')) # indicator variable for right (1) and left (0)
+
+hist <- hist[!(is.na(hist$left)), ] # removing 1 na value
+
+# Distribution of Student expenditures by Political Ideology
+hist_p <- ggplot(hist, aes(x=z,color=left, fill=left)) +
+  geom_histogram(position='identity', alpha = 0.3) +
+  scale_color_manual(values=c('steelblue','salmon')) +
+  scale_fill_manual(values=c('steelblue','salmon')) +
+  labs(title='Distribution of Per Pupil Expediture',
+       x='RMS value',
+       y='Count',
+       fill="Political Leaning") +
+  guides(color=F) +
+  theme_light(); hist_p
+
+# Distribution of Instructor expenditures by Political Ideology
+hist_i <- ggplot(hist, aes(x=z_i,color=left, fill=left)) +
+  geom_histogram(position='identity', alpha = 0.3) +
+  scale_color_manual(values=c('steelblue','salmon')) +
+  scale_fill_manual(values=c('steelblue','salmon')) +
+  labs(title='Distribution of Per Instructor Expediture',
+       x='RMS value',
+       y='Count',
+       fill="Political Leaning") +
+  guides(color=F) +
+  theme_light(); hist_i
+```
+
+#### Mapping Average District Spending by Congressional District
+```{r message=FALSE, warning=FALSE}
+# Subsetting for map layers 
 right <- map %>%
   subset(mrp_mean >0)
 left <- map %>%
   subset(mrp_mean <0)
 
 # Mapping per pupil Congressional District expenditure
-palette <- colorBin("Greens", domain = c(-2,40), bins = 9)
+palette <- colorBin("Greens", domain = c(-1.5,7), bins = 9)
 
 leaflet(map) %>%
   addProviderTiles(providers$CartoDB.Positron, group='Political') %>%
@@ -135,23 +207,23 @@ leaflet(map) %>%
                weight=2,
                color='salmon',
                fillColor = ~palette(z),
-              fillOpacity = 3,
+              fillOpacity = 1,
                highlight=highlightOptions(weight=3,
                                         color='aliceblue',
                                         bringToFront=T),
-              group="Right") %>%
+              group="Politically Right") %>%
   addPolygons(data=left,
               opacity=0.5,
               weight=2,
               color='steelblue',
               fillColor = ~palette(z),
-              fillOpacity = 3,
+              fillOpacity = 1,
               highlight=highlightOptions(weight=3,
                                       color='aliceblue',
                                       bringToFront=T),
-               group='Left') %>%
-  addLayersControl(baseGroups=c('Boundaries', 'Geography'),
-    overlayGroups=c('Right', 'Left'),
+               group='Politically Left') %>%
+  addLayersControl(baseGroups=c('Political', 'Physical'),
+    overlayGroups=c('Politically Right', 'Politically Left'),
     options=layersControlOptions(collapsed = F))%>%
   addLegend('bottomright',
             pal=palette,
@@ -161,42 +233,45 @@ leaflet(map) %>%
 ```
 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 # Mapping per instructor Congressional District Expenditure
-palette <- colorBin("Greens", domain = c(-2,46), bins = 9)
+palette_i <- colorBin("Greens", domain = c(-1.3,7), bins = 9)
 
 leaflet(map) %>%
   addProviderTiles(providers$CartoDB.Positron, group='Political') %>%
   addTiles(group='Physical') %>%
   addPolygons(data=right,
-               opacity=0.5,
-               weight=2,
-               color='salmon',
-               fillColor = ~palette(z_i),
-              fillOpacity = 3,
-               highlight=highlightOptions(weight=3,
+              opacity=0.5,
+              weight=2,
+              color='salmon',
+              fillColor = ~palette_i(z_i),
+              fillOpacity = 1,
+              highlight=highlightOptions(weight=3,
                                         color='aliceblue',
                                         bringToFront=T),
-              group="Right") %>%
+              group="Politically Right") %>%
   addPolygons(data=left,
               opacity=0.5,
               weight=2,
               color='steelblue',
-              fillColor = ~palette(z_i),
-              fillOpacity = 3,
+              fillColor = ~palette_i(z_i),
+              fillOpacity = 1,
               highlight=highlightOptions(weight=3,
                                       color='aliceblue',
                                       bringToFront=T),
-               group='Left') %>%
+               group='Politically Left') %>%
   addLayersControl(baseGroups=c('Political', 'Physical'),
-    overlayGroups=c('Right', 'Left'),
+    overlayGroups=c('Politically Right', 'Politically Left'),
     options=layersControlOptions(collapsed = F))%>%
   addLegend('bottomright',
-            pal=palette,
+            pal=palette_i,
             values=~z_i,
             opacity=0.5,
-            title='Per Pupil Instructor, scaled') 
+            title='Per Instructor Expenditure, scaled') 
 ```
+
+
+
 
 ## Extra Work to Delete
 ```{r eval=FALSE, include=FALSE}
