@@ -102,6 +102,7 @@ library(stringr)
 library(dplyr)
 library(kableExtra)
 library(plyr)
+library(systemfonts)
 ```
 
 
@@ -200,8 +201,8 @@ ideology_map
 
 As shown, we do find spatial correlations in political preferences. Politically right Congressional districts are clustered in the Midwest and South, and politically left Congressional districts tend to be located on the coasts. 
 
-In addition to, we find that the *extent* to which these districts are right or left leaning is not balanced. Districts that are more ive (or right-leaning), on average, are much greater than liberal (or left-leaning) Districts. In other words, 
-**ive Districts tend to be much more radically so than liberal Districts.**
+In addition to, we find that the *extent* to which these districts are right- or left-leaning is not balanced. Districts that are more conservative (or right-leaning), on average, are much greater than liberal (or left-leaning) Districts. In other words, 
+**conservative Districts tend to be much more radically so than liberal Districts.**
 
 Now, how does this relate to spending on education?
 
@@ -218,6 +219,7 @@ To clean the data, we collapsed school districts into their respective Congressi
 ```{r message=FALSE, warning=FALSE}
 # Loading SEDA dataset
 full_data_yr <- read_dta("district by year by grade covariates from acs and ccd master_v1_1.dta")
+full_data_yr1 <- read_dta("https://stacks.stanford.edu/file/druid:db586ns4974/district%20by%20year%20by%20grade%20covariates%20from%20acs%20and%20ccd%20master_v1_1.dta")
 
 # New data frame of variables of interest
 dat <- full_data_yr %>% # filtering to 2013
@@ -421,8 +423,8 @@ We do indeed find spatial correlations between education spending that aligns wi
 
 #### In summary,
 
-It is clear, that investing in students and teachers to ensure that all can access the support needed is critical for equity in education. We find that despite that the for right-leaning Districts, the magnitude in which constituent preferences are predominantly ive is much greater than for left-leaning Districts. In other words, Districts that are more left-leaning, are less radically liberal (and more neutral) than right-leaning Districts are radically ive.
+It is clear, that investing in students and teachers to ensure that all can access the support needed is critical for equity in education. We find that despite that the for right-leaning Districts, the magnitude in which constituent preferences are predominantly sided is much greater than for left-leaning Districts. In other words, Districts that are more left-leaning, are less radically liberal (and more neutral) than right-leaning Districts are radically conservative.
 
-Yet, left leaning districts invest more on average in students and teachers, with the leading Districts left-leaning. Further, follow up analyses may want to look at other outcomes, such as student teacher ratio and proportions of special education students, english language learners, special education teachers, and guidance counselors in school districts between Congressional Districts.
+Yet, left-leaning districts invest more on average in students and teachers, with the leading Districts left-leaning. Further, follow up analyses may want to look at other outcomes, such as student teacher ratio and proportions of special education students, English language learners, special education teachers, and guidance counselors in school districts between Congressional Districts.
 
 
