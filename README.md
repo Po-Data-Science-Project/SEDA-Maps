@@ -25,7 +25,7 @@ Toggling between the map layers, provides a visual of the geographic distributio
 This work was inspired by the redrawing of Congressional boundary lines based on the 2020 Census. Gerrymandering is threat to democracy and has serious real-world consequences. When districts are drawn unfairly, the public is prevented from electing representatives that accurately reflect the views of the population. Most often marginalized groups are redistributed to minimize their voices and votes. 
 
 #### Initial Questions: What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
-Here this work underscores the potential impact on students and teachers by visualizing current differences in spending in education for grades 3-8 based on the dominant political ideology in Congressional Districts. This question arose as way to compare the two major parties – Democrats and Republicans – to illuminate how political platforms and values have direct impacts at the level of school districts. An overview of the party education platforms are included. 
+Here this work underscores the potential impact on students and teachers by visualizing current differences in spending in education for grades 3-8 based on the dominant political ideology in Congressional Districts. This question arose as way to compare the two major parties – Democrats and Republicans – to illuminate how political platforms and values have direct impacts at the level of school districts. An overview of the party education platforms is included. 
 
 #### Data: Source, scraping method, cleanup, etc.
 Sources: 
