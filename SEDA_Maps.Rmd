@@ -219,7 +219,7 @@ To clean the data, we collapsed school districts into their respective Congressi
 ```{r message=FALSE, warning=FALSE}
 # Loading SEDA dataset
 full_data_yr <- read_dta("district by year by grade covariates from acs and ccd master_v1_1.dta")
-full_data_yr1 <- read_dta("https://stacks.stanford.edu/file/druid:db586ns4974/district%20by%20year%20by%20grade%20covariates%20from%20acs%20and%20ccd%20master_v1_1.dta")
+# full_data_yr1 <- read_dta("https://stacks.stanford.edu/file/druid:db586ns4974/district%20by%20year%20by%20grade%20covariates%20from%20acs%20and%20ccd%20master_v1_1.dta")
 
 # New data frame of variables of interest
 dat <- full_data_yr %>% # filtering to 2013
@@ -286,6 +286,7 @@ hist_p <- ggplot(hist, aes(x=z,color=left, fill=left)) +
   geom_histogram(position='identity', alpha = 0.3) +
   scale_color_manual(values=c('steelblue','salmon')) +
   scale_fill_manual(values=c('steelblue','salmon')) +
+  scale_x_continuous(breaks=seq(-2,7,1),labels=seq(-2,7,1)) +
   labs(title='Distribution of Per Pupil Expediture',
        x='Scaled (standard deviation units)',
        y='Count',
@@ -298,6 +299,7 @@ hist_i <- ggplot(hist, aes(x=z_i,color=left, fill=left)) +
   geom_histogram(position='identity', alpha = 0.3) +
   scale_color_manual(values=c('steelblue','salmon')) +
   scale_fill_manual(values=c('steelblue','salmon')) +
+  scale_x_continuous(breaks=seq(-2,7,1),labels=seq(-2,7,1)) +
   labs(title='Distribution of Per Instructor Expediture',
        x='Scaled (standard deviation units)',
        y='Count',
@@ -426,5 +428,3 @@ We do indeed find spatial correlations between education spending that aligns wi
 It is clear, that investing in students and teachers to ensure that all can access the support needed is critical for equity in education. We find that despite that the for right-leaning Districts, the magnitude in which constituent preferences are predominantly sided is much greater than for left-leaning Districts. In other words, Districts that are more left-leaning, are less radically liberal (and more neutral) than right-leaning Districts are radically conservative.
 
 Yet, left-leaning districts invest more on average in students and teachers, with the leading Districts left-leaning. Further, follow up analyses may want to look at other outcomes, such as student teacher ratio and proportions of special education students, English language learners, special education teachers, and guidance counselors in school districts between Congressional Districts.
-
-
