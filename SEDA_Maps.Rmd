@@ -4,20 +4,76 @@ author: "Amy Luo"
 date: "11/20/2021"
 output:
   html_document:
-    fig_width: 10
-    fig_height: 10
     theme:
       bootswatch: 'cosmo'
     df_print: paged
   pdf_document: default
 ---
+
 ### Congressional District, Political Leaning, and School Funding
+
+---
+
+#### Setting the Stage
+
+Over this past year, states and local governments have begun a one-a-decade process of drawing new voting district boundaries. This redistricting uses population and demographic data from the census conducted by the Census Bureau, with the most recent occurring in 2020.
+
+The redistribution process was created to accurately reflect how communities change over time in the US legislative system. Maps are redrawn to ensure that districts are equally populated and representative of the district's population. When done correctly and equitably, redistricting is a window for the political electoral processes to adapt to constituent demographics accurately, ensuring that constituents are accurately represented in local, state, and national legislative. In the words of John Adams, "an exact portrait, a miniature" of the people and communities grouped geographically, 
+
+Yet, redistricting has become the most pressing threat to democracy. As described by the [Brennan Center](https://www.brennancenter.org/our-work/research-reports/gerrymandering-explained): 
+
+>> But sometimes the process is used to draw maps that put a thumb on the scale to manufacture election outcomes that are detached from the preferences of voters. Rather than voters choosing their representatives, gerrymandering empowers politicians to choose their voters. This tends to occur especially when linedrawing is left to legislatures and one political party controls the process, as has become increasingly common. When that happens, partisan concerns almost invariably take precedence over all else. That produces maps where electoral results are virtually guaranteed even in years where the party drawing maps has a bad year.
+
+Alongside a [2019 Supreme Court](https://www.brennancenter.org/our-work/court-cases/rucho-v-common-cause)  ruling that
+**prohibits redistricting to be challenged in federal court**, this reaffirms major threats to health, education, and social safety net policies at state and national levels, even moreso heightened midst a time of deep divisive partisanship in the United States.
+
+---
+
+![How Gerrymadering Manipulates District Boundaries](How_to_Steal_an_Election_-_Gerrymandering.svg.png){width=75% height=75%}
+[Image source](https://www.fairvote.org/new_poll_everybody_hates_gerrymandering)
+
+---
+
+#### In summary,\
+- Rigged maps **make elections less competitive**, severly dampening the voices and political voices of all Americans
+
+- Both historical and current residential segregation means that **marginalized communities are the targets of pointed redistricting**; effectively creating a tool for parties to slice and dice districts in ways that discriminate against communities of color
+
+- **Gerrymandering is getting worse.** Applying data science to work, intricate computer algorithms and sophisticated date on voter patterns have allowed political gamesmanship to "maximize" partisan benefit 
+
+---
+
+### Intial Questions
+
+As a part of a larger exploration of the **impact of educational and social safety net policies and sociodemographic characteristics at the state and school district levels on predictors of student success**. We apply the SEDA data set to provide a comprehensive picture of factors at the family, district, and state-level factors that we hypothesize influence student educational outcomes.
+
+To prime further data analyses, the objective of this first portion is to investigate the differences, if any, in school district expenditure between political preferences at the Congressional District level.
+
+#### Specifically,
+
+##### Does spending on school districts differ by political ideology?
+
+The analyses below highlight differences by drawing from data on per student expenditure and per teacher expenditures. This was facilitated at the Congressional District level to capture the granularities unafforded when looking at state-only levels.
+
+An interactive map facilitates this comparison by grouping dominant political preferences and expenditure per student and teacher averaged over school districts in a Congressional District. 
+
+As mentioned in class, 
+
+> Plots of maps can be very powerful, very informative and very aesthetically pleasing visualizations.
+
+The goal was to be able to provide a compelling story using nationally representative data. 
+
+All in all, we hope that this work underscores the potential impact of gerrymandering on students and teachers by visualizing differences in spending in education for grades 3-8 based on the dominant political ideology in Congressional districts. 
+
+---
+
+### Data Sources
 
 **School Expenditure data** are available from: https://exhibits.stanford.edu/data/catalog/db586ns4974
 
 **Political Ideology data** are available from: https://americanideologyproject.com/
 
-- For further information on the measurement methodology for constituent policy preferences, please see this paper by [Tausanovitch and Warshaw (2013)](https://americanideologyproject.com/JOP_Tausanovich_Warshaw_2013.pdf) 
+- For further background on how constituent policy preferences were measured, please see this paper by [Tausanovitch and Warshaw (2013)](https://americanideologyproject.com/JOP_Tausanovich_Warshaw_2013.pdf) 
 
 Variables of interest include:\
 
@@ -29,8 +85,9 @@ Variables of interest include:\
 - *ppexp_inst* : instruction expenditures; instr exp/enrolled\
 - *mrp_mean* : mean policy preferences of citizens in every congressional district estimates using multilevel regression with poststratification
 
-#### Loading the data
-```{r message=FALSE, warning=FALSE}
+---
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
 # Packages
 library(haven)
 library(dplyr)
@@ -44,32 +101,17 @@ library(ggplot2)
 library(stringr)
 library(dplyr)
 library(kableExtra)
+library(plyr)
 ```
 
 
-#### Data Prep 
-```{r message=FALSE, warning=FALSE}
-# Loading SEDA dataset
-full_data_yr <- read_dta("district by year by grade covariates from acs and ccd master_v1_1.dta")
+### Background: Party Platform Positions on Education 
 
-# New data frame of variables of interest
-dat <- full_data_yr %>% # filtering to 2013
-  filter(year ==2013) 
+This question arose as way to compare the two major parties – Democrats and Republicans – to illuminate how political platforms and values have direct impacts at the level of school districts. 
 
-dat <- dat[!duplicated(dat$leaid),] %>% # keeping only one observation per school district (removing grade level layer)
-  select('leaid','cdcode','ppexp_tot','ppexp_inst') %>% 
-  group_by(cdcode) %>% 
-  mutate(ppexp = mean(ppexp_tot)) %>% # average per pupil expenditure in a congressional district
-  mutate(piexp = mean(ppexp_inst)) %>% # average per instructor expenditure in a congressional district
-  ungroup()
+An overview of the party education platforms is included below:
 
-seda <- dat[!duplicated(dat$cdcode),] %>% # keeping only one observation per congressional district (removing school district layer)
-  select(-'leaid',-'ppexp_tot',-'ppexp_inst') # dropping school district ID
-```
-
-
-#### Background: Party Platform Positions on Education 
-```{r message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 tabd <- read.csv('Amy_Table.csv')
 tabd %>%
   kbl(caption="Comparison between Dem and GOP platforms for K-12 education",
@@ -90,15 +132,25 @@ tabd %>%
   scroll_box(width = "100%", height = "650px")
 ```
 
+---
 
+### Exploratory Analyses: Mapping Constituent Ideology by Congressional District
 
-#### Mapping Constituent Ideology by Congressional District
-```{r message=FALSE, warning=FALSE}
+To begin, we first must accurately delineate between political right and left Congressional districts. 
+
+Here, we applied estimates of political preferences from a collection of survey measures to capture the distribution of political preferences **based on those living in an geographic area**. 
+
+This was purposeful. As mentioned above, one concern we had was that, as a result of gerrymandering, relying only on the election results and the parties of Congressional representatives may underweight the true distribution of political preferences among those living in the District. Therefore, we drew from an opensource project, The American Ideology project, (Tausanovitch and Warshaw, 2013)[https://americanideologyproject.com/], to:
+
+1. explore the distribution of political preferences by geographic regions; and 
+2. the magnitude, or "how radical" preferences are.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, dpi = 200}
 # Loading USAboundaries from GitHub
 devtools::install_github("ropensci/USAboundaries")
 devtools::install_github("ropensci/USAboundariesData")
 
-# Using USAboundaries package, load the spatial data 2010-2020 Congressional Districts
+# Using USAboundaries package, load the spatial data 2010-2020 Congressional districts
 spatial <- us_congressional()
 
 
@@ -146,9 +198,66 @@ ideology_map <- ggplot() +
 ideology_map
 ```
 
+As shown, we do find spatial correlations in political preferences. Politically right Congressional districts are clustered in the Midwest and South, and politically left Congressional districts tend to be located on the coasts. 
 
-#### Distribution of Education Funding
+In addition to, we find that the *extent* to which these districts are right or left leaning is not balanced. Districts that are more ive (or right-leaning), on average, are much greater than liberal (or left-leaning) Districts. In other words, 
+**ive Districts tend to be much more radically so than liberal Districts.**
+
+Now, how does this relate to spending on education?
+
+---
+
+### SEDA Dataset Prep
+
+For the following code, please ensure that you have the Stanford Education Data Archive *codebook_covariates_v1_1.xlsx* installed and available in your working directory
+
+- These data are available for download from https://exhibits.stanford.edu/data/catalog/db586ns4974
+
+To clean the data, we collapsed school districts into their respective Congressional Districts, averaging the per pupil expenditure and per instructor expenditure for a single measure per Congressional District.
+
 ```{r message=FALSE, warning=FALSE}
+# Loading SEDA dataset
+full_data_yr <- read_dta("district by year by grade covariates from acs and ccd master_v1_1.dta")
+
+# New data frame of variables of interest
+dat <- full_data_yr %>% # filtering to 2013
+  filter(year ==2013) 
+
+dat <- dat[!duplicated(dat$leaid),] %>% # keeping only one observation per school district (removing grade level layer)
+  select('leaid','cdcode','ppexp_tot','ppexp_inst')  
+
+dat_na <- sum(is.na(dat$ppexp_tot), is.na(dat$ppexp_inst)) # any NAs?  
+x <- is.na(dat$ppexp_inst) 
+y <- is.na(dat$ppexp_tot)
+nonpaired_na <- sum(any(x != y)) # Confirms that all NA values are paired, so we can remove rows for both ppexp_tot and ppexp_inst combined 
+rm(x,y,nonpaired_na, dat_na)
+
+dat <- dat[!(is.na(dat$ppexp_tot)), ] # removing 50 NA values (25 observations)
+
+# Final clean dataset with avg values by Congressional district
+dat <- ddply(dat, ~cdcode, transform, ppexp=mean(ppexp_tot),  piexp=mean(ppexp_inst))
+
+seda <- dat[!duplicated(dat$cdcode),] %>% # keeping only one observation per Congressional district
+  select(-'leaid',-'ppexp_tot',-'ppexp_inst') # dropping school district measures
+```
+
+---
+
+#### Exploratory Analysis: Distribution of Education Funding
+
+Now that we've delineated between political right and left Congressional District, we explored how per student and per teacher spending differs between Districts. 
+
+A layered histogram will suffice. From this we can explore: 
+
+1. How much is invested in students and teachers, scaled using the underlying dispersion of values (in units of standard deviation)
+
+2. How clustered is the spending? i.e. plot skew and spread
+
+But first, we want to compare spending based on the national mean and variance. This provides a way to accurately adjust how we can analyze where Congressional districts fall related to spending across *all* districts. 
+
+To do such, a scale (standard deviations) was applied to per student and teacher expenditures in the remaining analyses. 
+
+```{r message=FALSE, warning=FALSE, dpi = 200}
 # Joining education dataset with map dataset
 seda <- seda %>% 
   mutate(cd_fips=as.character(cdcode)) %>%
@@ -156,45 +265,77 @@ seda <- seda %>%
 
 map <- left_join(map, seda, by = 'cd_fips') 
 
-# Per pupil Congressional District expenditure
+# Per pupil Congressional district expenditure
 map$z <- scale(map$ppexp)
 
-# Per instructor Congressional District Expenditure
+# Per instructor Congressional district Expenditure
 map$z_i <- scale(map$piexp)
 
 # Creating indicator variable for histogram layers
 hist <- map %>% 
   mutate(left = ifelse(mrp_mean>0, 'Right', 'Left')) # indicator variable for right (1) and left (0)
 
-hist <- hist[!(is.na(hist$left)), ] # removing 1 na value
+hist_na <- sum(is.na(hist$left)) # any NAs for unknown political ideology? 
+hist <- hist[!(is.na(hist$left)), ] # removing 1 NA value
+rm(hist_na)
 
-# Distribution of Student expenditures by Political Ideology
+# Distribution of per Pupil expenditures by Political Ideology
 hist_p <- ggplot(hist, aes(x=z,color=left, fill=left)) +
   geom_histogram(position='identity', alpha = 0.3) +
   scale_color_manual(values=c('steelblue','salmon')) +
   scale_fill_manual(values=c('steelblue','salmon')) +
   labs(title='Distribution of Per Pupil Expediture',
-       x='RMS value',
+       x='Scaled (standard deviation units)',
        y='Count',
        fill="Political Leaning") +
   guides(color=F) +
-  theme_light(); hist_p
+  theme_light()
 
-# Distribution of Instructor expenditures by Political Ideology
+# Distribution of per Instructor expenditures by Political Ideology
 hist_i <- ggplot(hist, aes(x=z_i,color=left, fill=left)) +
   geom_histogram(position='identity', alpha = 0.3) +
   scale_color_manual(values=c('steelblue','salmon')) +
   scale_fill_manual(values=c('steelblue','salmon')) +
   labs(title='Distribution of Per Instructor Expediture',
-       x='RMS value',
+       x='Scaled (standard deviation units)',
        y='Count',
        fill="Political Leaning") +
   guides(color=F) +
-  theme_light(); hist_i
+  theme_light()
+
+## Dropping NAs to calculate group averages
+z_avgs <- hist[complete.cases(hist$z),] 
+z_i_avgs <- hist[complete.cases(hist$z_i),]
+na_z <- sum(is.na(hist$z)) # Ensuring that NAs are properly dropped
+na_z_i <- sum(is.na(hist$z_i)) # Ensuring that NAs are properly dropped
+rm(na_z, na_z_i)
+
+## Data frame with group averages
+mu <- ddply(z_avgs, 'left', summarize, grp.mean=mean(z))
+mu_i <- ddply(z_i_avgs, 'left', summarize, grp.mean=mean(z_i))
+
+# Final histogram of per Pupil expenditures by Political Ideology
+hist_p <- hist_p + geom_vline(xintercept=mu$grp.mean[1], color='dodgerblue', linetype='dashed') +
+  geom_vline(xintercept=mu$grp.mean[2], color='tomato', linetype='longdash'); hist_p
+
+# Final histogram of per Instructor expenditures by Political Ideology
+hist_i <- hist_i + geom_vline(xintercept=mu_i$grp.mean[1], color='dodgerblue', linetype='dashed') +
+  geom_vline(xintercept=mu_i$grp.mean[2], color='tomato', linetype='longdash'); hist_i
 ```
 
-#### Mapping Average District Spending by Congressional District
-```{r message=FALSE, warning=FALSE}
+From the histogram, we find that, indeed, confirms our hypothesis: **that, as expected from in party platforms, ive districts invest less in students and teachers.**
+
+- The mean spending is different between districts, with districts that are more left leaning, on average, invest more in students and teachers.
+
+- In addition, the distribution of spending is less 'bunched' in liberal Districts a right skew (meaning there are more districts that spend above the national average in students and teachers).
+
+Now, let's merge Congressional district boundaries and education spending together in a single visualization.
+
+--- 
+
+### Final Analysis: Mapping Average District Spending by Congressional District
+
+```{r message=FALSE, warning=FALSE, dpi = 130}
 # Subsetting for map layers 
 right <- map %>%
   subset(mrp_mean >0)
@@ -235,12 +376,9 @@ leaflet(map) %>%
             values=~z,
             opacity=0.5,
             title='Per Pupil Expenditure, scaled') 
-```
 
-
-```{r message=FALSE, warning=FALSE}
 # Mapping per instructor Congressional District Expenditure
-palette_i <- colorBin("Greens", domain = c(-1.3,7), bins = 9)
+palette_i <- colorBin("Greens", domain = c(-1.3,6), bins = 9)
 
 leaflet(map) %>%
   addProviderTiles(providers$CartoDB.Positron, group='Political') %>%
@@ -274,3 +412,17 @@ leaflet(map) %>%
             opacity=0.5,
             title='Per Instructor Expenditure, scaled') 
 ```
+
+Toggling between the map layers provides an interactive visual of the geographic distribution of Congressional districts lines and spending on education by political leaning.
+
+We do indeed find spatial correlations between education spending that aligns with Congressional districts. 
+
+---
+
+#### In summary,
+
+It is clear, that investing in students and teachers to ensure that all can access the support needed is critical for equity in education. We find that despite that the for right-leaning Districts, the magnitude in which constituent preferences are predominantly ive is much greater than for left-leaning Districts. In other words, Districts that are more left-leaning, are less radically liberal (and more neutral) than right-leaning Districts are radically ive.
+
+Yet, left leaning districts invest more on average in students and teachers, with the leading Districts left-leaning. Further, follow up analyses may want to look at other outcomes, such as student teacher ratio and proportions of special education students, english language learners, special education teachers, and guidance counselors in school districts between Congressional Districts.
+
+
