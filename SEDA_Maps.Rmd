@@ -18,14 +18,13 @@ output:
 
 Over this past year, states and local governments have begun a one-a-decade process of drawing new voting district boundaries. This redistricting uses population and demographic data from the census conducted by the Census Bureau, with the most recent occurring in 2020.
 
-The redistribution process was created to accurately reflect how communities change over time in the US legislative system. Maps are redrawn to ensure that districts are equally populated and representative of the district's population. When done correctly and equitably, redistricting is a window for the political electoral processes to adapt to constituent demographics accurately, ensuring that constituents are accurately represented in local, state, and national legislative. In the words of John Adams, "an exact portrait, a miniature" of the people and communities grouped geographically, 
+The redistribution process was created to accurately reflect how communities change over time in the US legislative system. Maps are redrawn to ensure that districts are equally populated and representative of the district’s population. When done correctly and equitably, redistricting is a window for the political electoral processes to adapt to constituent demographics accurately, ensuring that constituents are accurately represented in local, state, and national legislation. In the words of John Adams, “an exact portrait, a miniature” of the people and communities grouped geographically.
 
 Yet, redistricting has become the most pressing threat to democracy. As described by the [Brennan Center](https://www.brennancenter.org/our-work/research-reports/gerrymandering-explained): 
 
 >> But sometimes the process is used to draw maps that put a thumb on the scale to manufacture election outcomes that are detached from the preferences of voters. Rather than voters choosing their representatives, gerrymandering empowers politicians to choose their voters. This tends to occur especially when linedrawing is left to legislatures and one political party controls the process, as has become increasingly common. When that happens, partisan concerns almost invariably take precedence over all else. That produces maps where electoral results are virtually guaranteed even in years where the party drawing maps has a bad year.
 
-Alongside a [2019 Supreme Court](https://www.brennancenter.org/our-work/court-cases/rucho-v-common-cause)  ruling that
-**prohibits redistricting to be challenged in federal court**, this reaffirms major threats to health, education, and social safety net policies at state and national levels, even moreso heightened midst a time of deep divisive partisanship in the United States.
+Alongside a [2019 Supreme Court](https://www.brennancenter.org/our-work/court-cases/rucho-v-common-cause)  ruling that **prohibits redistricting to be challenged in federal court**, this reaffirms major threats to health, education, and social safety net policies at state and national levels, further heightened midst a time of deep divisive partisanship in the United State\
 
 ---
 
@@ -35,17 +34,17 @@ Alongside a [2019 Supreme Court](https://www.brennancenter.org/our-work/court-ca
 ---
 
 #### In summary,\
-- Rigged maps **make elections less competitive**, severly dampening the voices and political voices of all Americans
+- Rigged maps **make elections less competitive**, severely dampening the voices and political voices of all Americans
 
 - Both historical and current residential segregation means that **marginalized communities are the targets of pointed redistricting**; effectively creating a tool for parties to slice and dice districts in ways that discriminate against communities of color
 
-- **Gerrymandering is getting worse.** Applying data science to work, intricate computer algorithms and sophisticated date on voter patterns have allowed political gamesmanship to "maximize" partisan benefit 
+- **Gerrymandering is getting worse.** Applying data science to work, intricate computer algorithms, and sophisticated data on voter patterns have allowed political gamesmanship to “maximize” partisan benefit
 
 ---
 
 ### Intial Questions
 
-As a part of a larger exploration of the **impact of educational and social safety net policies and sociodemographic characteristics at the state and school district levels on predictors of student success**. We apply the SEDA data set to provide a comprehensive picture of factors at the family, district, and state-level factors that we hypothesize influence student educational outcomes.
+As a part of a larger exploration of the **impact of educational and social safety net policies and sociodemographic characteristics at the state and school district levels on predictors of student success.** We apply the SEDA data set to provide a comprehensive picture of factors at the family, district, and state-level factors that we hypothesize influence student educational outcomes.
 
 To prime further data analyses, the objective of this first portion is to investigate the differences, if any, in school district expenditure between political preferences at the Congressional District level.
 
@@ -55,15 +54,15 @@ To prime further data analyses, the objective of this first portion is to invest
 
 The analyses below highlight differences by drawing from data on per student expenditure and per teacher expenditures. This was facilitated at the Congressional District level to capture the granularities unafforded when looking at state-only levels.
 
-An interactive map facilitates this comparison by grouping dominant political preferences and expenditure per student and teacher averaged over school districts in a Congressional District. 
+An interactive map facilitates this comparison by grouping dominant political preferences and expenditure per student and teacher averaged over school districts in a Congressional District.
 
 As mentioned in class, 
 
 > Plots of maps can be very powerful, very informative and very aesthetically pleasing visualizations.
 
-The goal was to be able to provide a compelling story using nationally representative data. 
+The goal was to be able to provide a compelling story using nationally representative data.
 
-All in all, we hope that this work underscores the potential impact of gerrymandering on students and teachers by visualizing differences in spending in education for grades 3-8 based on the dominant political ideology in Congressional districts. 
+All in all, we hope that this work underscores the potential impact of gerrymandering on students and teachers by visualizing differences in spending in education for grades 3-8 based on the dominant political ideology in Congressional districts.
 
 ---
 
@@ -108,7 +107,7 @@ library(systemfonts)
 
 ### Background: Party Platform Positions on Education 
 
-This question arose as way to compare the two major parties – Democrats and Republicans – to illuminate how political platforms and values have direct impacts at the level of school districts. 
+This question arose to compare the two major parties – Democrats and Republicans – to illuminate how political platforms and values have direct impacts at the level of school districts.\
 
 An overview of the party education platforms is included below:
 
@@ -137,14 +136,14 @@ tabd %>%
 
 ### Exploratory Analyses: Mapping Constituent Ideology by Congressional District
 
-To begin, we first must accurately delineate between political right and left Congressional districts. 
+To begin, we first must accurately delineate between politically right and left Congressional districts.\
 
-Here, we applied estimates of political preferences from a collection of survey measures to capture the distribution of political preferences **based on those living in an geographic area**. 
+Here, we applied estimates of political preferences from a collection of survey measures to capture the distribution of political preferences **based on those living in an geographic area**.\
 
 This was purposeful. As mentioned above, one concern we had was that, as a result of gerrymandering, relying only on the election results and the parties of Congressional representatives may underweight the true distribution of political preferences among those living in the District. Therefore, we drew from an opensource project, The American Ideology project, (Tausanovitch and Warshaw, 2013)[https://americanideologyproject.com/], to:
 
-1. explore the distribution of political preferences by geographic regions; and 
-2. the magnitude, or "how radical" preferences are.
+1. Explore the distribution of political preferences by geographic regions, and  
+2. The magnitude, or "how radical" preferences are.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE, dpi = 200}
 # Loading USAboundaries from GitHub
@@ -199,10 +198,12 @@ ideology_map <- ggplot() +
 ideology_map
 ```
 
-As shown, we do find spatial correlations in political preferences. Politically right Congressional districts are clustered in the Midwest and South, and politically left Congressional districts tend to be located on the coasts. 
+As shown, we do find spatial correlations in political preferences. Politically right Congressional districts are clustered in the Midwest and South, and politically left Congressional districts tend to be located on the coasts.
 
 In addition to, we find that the *extent* to which these districts are right- or left-leaning is not balanced. Districts that are more conservative (or right-leaning), on average, are much greater than liberal (or left-leaning) Districts. In other words, 
 **conservative Districts tend to be much more radically so than liberal Districts.**
+
+In addition, we find that the *magnitude* to which these districts are right- or left-leaning is not balanced. Districts that are more conservative (or right-leaning), on average, are much greater than liberal (or left-leaning) Districts. In other words, **conservative Districts tend to be much more radically so than liberal Districts.**\
 
 Now, how does this relate to spending on education?
 
@@ -247,7 +248,7 @@ seda <- dat[!duplicated(dat$cdcode),] %>% # keeping only one observation per Con
 
 #### Exploratory Analysis: Distribution of Education Funding
 
-Now that we've delineated between political right and left Congressional District, we explored how per student and per teacher spending differs between Districts. 
+Now that we’ve delineated between politically right and left Congressional District, we explored **how per student and per teacher spending differs between Districts.**
 
 A layered histogram will suffice. From this we can explore: 
 
@@ -255,7 +256,7 @@ A layered histogram will suffice. From this we can explore:
 
 2. How clustered is the spending? i.e. plot skew and spread
 
-But first, we want to compare spending based on the national mean and variance. This provides a way to accurately adjust how we can analyze where Congressional districts fall related to spending across *all* districts. 
+But first, we want to compare spending based on the national mean and variance. This provides a way to accurately compare education funding per Congressional district based on the national average across all districts. 
 
 To do such, a scale (standard deviations) was applied to per student and teacher expenditures in the remaining analyses. 
 
@@ -327,11 +328,11 @@ hist_i <- hist_i + geom_vline(xintercept=mu_i$grp.mean[1], color='dodgerblue', l
   geom_vline(xintercept=mu_i$grp.mean[2], color='tomato', linetype='longdash'); hist_i
 ```
 
-From the histogram, we find that, indeed, confirms our hypothesis: **that, as expected from in party platforms, ive districts invest less in students and teachers.**
+From the histogram, we find that, indeed, confirms our hypothesis: **that, as expected from party platforms positions, more conservative districts invest less in students and teachers.**\
 
-- The mean spending is different between districts, with districts that are more left leaning, on average, invest more in students and teachers.
+- The mean spending is different between districts, with districts that are more left-leaning, on average, investing more in students and teachers.
 
-- In addition, the distribution of spending is less 'bunched' in liberal Districts a right skew (meaning there are more districts that spend above the national average in students and teachers).
+- In addition, the distribution of spending is less ‘bunched’ in liberal Districts a right skew (meaning there are more districts that spend above the national average in students and teachers).\
 
 Now, let's merge Congressional district boundaries and education spending together in a single visualization.
 
@@ -417,7 +418,7 @@ leaflet(map) %>%
             title='Per Instructor Expenditure, scaled') 
 ```
 
-Toggling between the map layers provides an interactive visual of the geographic distribution of Congressional districts lines and spending on education by political leaning.
+Toggling between the map layers provides an interactive visualization of the geographic distribution of Congressional districts lines and spending on education by political leaning.\
 
 We do indeed find spatial correlations between education spending that aligns with Congressional districts. 
 
@@ -425,6 +426,6 @@ We do indeed find spatial correlations between education spending that aligns wi
 
 #### In summary,
 
-It is clear, that investing in students and teachers to ensure that all can access the support needed is critical for equity in education. We find that despite that the for right-leaning Districts, the magnitude in which constituent preferences are predominantly sided is much greater than for left-leaning Districts. In other words, Districts that are more left-leaning, are less radically liberal (and more neutral) than right-leaning Districts are radically conservative.
+It is clear, that investing in students and teachers to ensure that all can access the support needed is critical for equity in education. We find that despite that for right-leaning Districts, the magnitude in which constituent preferences are predominantly sided is much greater than for left-leaning Districts. In other words, Districts that are more left-leaning, are less radically liberal (and more neutral) than right-leaning Districts are radically conservative.\
 
-Yet, left-leaning districts invest more on average in students and teachers, with the leading Districts left-leaning. Further, follow up analyses may want to look at other outcomes, such as student teacher ratio and proportions of special education students, English language learners, special education teachers, and guidance counselors in school districts between Congressional Districts.
+Yet, left-leaning districts invest more on average in students and teachers, with the leading Districts left-leaning. Further, follow-up analyses may want to look at other outcomes, such as student teacher ratio and proportions of special education students, English language learners, special education teachers, and guidance counselors in school districts between Congressional Districts.
